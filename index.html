@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>For Shru 🦋</title>
+<meta property="og:title" content="Nabi's Little Adventure">
+<meta property="og:description" content="A tiny game, made just for Shru.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --blossom:#FFD9E8;
+  --blossom-deep:#F7B8D4;
+  --cream:#FFF9F2;
+  --butter:#FFE9B8;
+  --mint:#CDEEDD;
+  --lavender:#D9D4F7;
+  --ink:#5C4457;
+  --ink-soft:#8A7085;
+  --white:#FFFFFF;
+  /* nabi wing colors: start grey, earned per stop */
+  --c-main:#C9C3CB;
+  --c-stroke:#A9A2AB;
+  --c-spot:#BBB5BD;
+  --c-low:#D6D0D8;
+  --c-tip:#B0AAB2;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+body{
+  font-family:'Quicksand',-apple-system,'Segoe UI',sans-serif;
+  color:var(--ink);
+  background:var(--cream);
+  user-select:none;-webkit-user-select:none;
+  -webkit-touch-callout:none;
+  touch-action:manipulation;
+}
+#stage{position:fixed;inset:0;max-width:520px;margin:0 auto;overflow:hidden}
+
+/* ---------- scenes ---------- */
+.scene{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;align-items:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .8s ease;
+}
+.scene.on{opacity:1;pointer-events:auto}
+
+/* per-scene skies */
+#s0{background:linear-gradient(180deg,#FDE8F1 0%,#FFF3E4 55%,#E4F4EA 100%)}
+#s1{background:linear-gradient(180deg,#FCEBF3 0%,#FFF6E9 60%,#DDF1E6 100%)}
+#s2{background:linear-gradient(180deg,#FFEFF6 0%,#FFF9EE 45%,#CFEcDC 100%)}
+#s3{background:linear-gradient(180deg,#FFF4DC 0%,#FFEFD0 50%,#D8F0E2 100%)}
+#s4{background:linear-gradient(180deg,#FFE3D8 0%,#FFD9E8 55%,#F3E4D2 100%)}
+#s5{background:linear-gradient(180deg,#B9B3DE 0%,#CFC9EE 55%,#B7C4E0 100%)}
+#s5::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,#D9D4F7 0%,#FBE3EE 55%,#FFF2DC 100%);
+  opacity:0;transition:opacity 3s ease;
+}
+#s5.cleared::before{opacity:1}
+#s5 .eyebrow,#s5 .subbar,#s5 .rainwrap{position:relative;z-index:1}
+#s5 .dialog{z-index:2}
+#s6{background:linear-gradient(180deg,#FFDDEB 0%,#FFEFD8 50%,#D6F1E3 100%)}
+
+/* ---------- shared bits ---------- */
+.eyebrow{
+  font-family:'Gaegu',cursive;font-weight:700;font-size:1.05rem;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);
+  margin-top:max(3.4vh,20px);
+}
+h1,h2{font-family:'Gaegu',cursive;font-weight:700;line-height:1.05}
+h1{font-size:clamp(2.6rem,11vw,3.6rem)}
+h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
+
+.dialog{
+  position:absolute;left:5%;right:5%;bottom:max(4.5vh,28px);
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(8px);
+  border-radius:22px;
+  padding:18px 20px 15px;
+  box-shadow:0 10px 30px rgba(92,68,87,.14);
+  min-height:112px;
+  cursor:pointer;
+}
+.dialog .who{
+  font-family:'Gaegu',cursive;font-weight:700;font-size:1.05rem;
+  color:var(--blossom-deep);letter-spacing:.06em;margin-bottom:2px;
+}
+.dialog .who:empty{display:none}
+.dialog .txt{font-size:1.02rem;line-height:1.5;font-weight:500}
+.dialog .hint{
+  position:absolute;right:16px;bottom:9px;
+  font-family:'Gaegu',cursive;font-size:.95rem;color:var(--ink-soft);
+  animation:nudge 1.4s ease-in-out infinite;
+}
+@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+.dialog .hint.off{display:none}
+
+.btn{
+  font-family:'Gaegu',cursive;font-weight:700;font-size:1.25rem;
+  color:var(--ink);
+  background:var(--blossom);
+  border:none;border-radius:999px;
+  padding:13px 30px;
+  box-shadow:0 6px 0 var(--blossom-deep);
+  cursor:pointer;
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--blossom-deep)}
+.btn.ghost{background:var(--butter);box-shadow:0 6px 0 #EDCF8B}
+.btn.ghost:active{box-shadow:0 2px 0 #EDCF8B}
+.btnrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.dialog .btnrow{margin-top:12px;margin-bottom:4px}
+
+/* back button */
+#backBtn{
+  position:absolute;top:max(2.4vh,14px);left:16px;z-index:60;
+  font-family:'Gaegu',cursive;font-weight:700;font-size:1.05rem;
+  color:var(--ink-soft);
+  background:rgba(255,255,255,.78);
+  border:none;border-radius:999px;padding:7px 15px 7px 12px;
+  box-shadow:0 3px 10px rgba(92,68,87,.14);
+  cursor:pointer;display:none;
+}
+#backBtn.show{display:block}
+#backBtn:active{transform:translateY(2px)}
+
+/* petal progress dots: each slot lights in its own earned color */
+#petals{
+  position:absolute;top:max(2.4vh,14px);right:16px;
+  display:flex;gap:7px;z-index:40;
+}
+#petals span{
+  width:13px;height:13px;border-radius:50% 50% 50% 4px;
+  background:rgba(255,255,255,.65);
+  border:1.5px solid rgba(92,68,87,.18);
+  transform:rotate(45deg);
+  transition:background .8s ease,border-color .8s ease;
+}
+#petals span:nth-child(1).lit{background:#F7B8D4;border-color:#F7B8D4}
+#petals span:nth-child(2).lit{background:#FFD977;border-color:#FFD977}
+#petals span:nth-child(3).lit{background:#FFA872;border-color:#FFA872}
+#petals span:nth-child(4).lit{background:#9DBBEF;border-color:#9DBBEF}
+
+/* ---------- Nabi the butterfly ---------- */
+.nabi{width:130px;height:120px;position:relative}
+.nabi svg{width:100%;height:100%;overflow:visible}
+.nabi .wmain{fill:var(--c-main);stroke:var(--c-stroke);transition:fill 1.6s ease,stroke 1.6s ease}
+.nabi .wlow{fill:var(--c-low);stroke:var(--c-stroke);transition:fill 1.6s ease,stroke 1.6s ease}
+.nabi .wspot{fill:var(--c-spot);transition:fill 1.6s ease}
+.nabi .wtip{fill:var(--c-tip);transition:fill 1.6s ease}
+.nabi .wingL,.nabi .wingR{transform-origin:100px 88px}
+.nabi.flap .wingL{animation:flapL 1.1s ease-in-out infinite}
+.nabi.flap .wingR{animation:flapR 1.1s ease-in-out infinite}
+@keyframes flapL{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.62) rotate(-4deg)}}
+@keyframes flapR{0%,100%{transform:scaleX(1)}50%{transform:scaleX(.62) rotate(4deg)}}
+.nabi.asleep .wingL,.nabi.asleep .wingR{transform:scaleX(.5) rotate(0)}
+.nabi.spin{animation:spinflip 1s ease}
+@keyframes spinflip{to{transform:rotate(360deg)}}
+.float{animation:floaty 3.2s ease-in-out infinite}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+
+/* ---------- scene 0 : title ---------- */
+#s0 .titlewrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:0 24px}
+#s0 .sub{font-size:1.05rem;color:var(--ink-soft);font-weight:500;margin-top:10px}
+#s0 .tapline{
+  font-family:'Gaegu',cursive;font-size:1.3rem;color:var(--ink-soft);
+  margin-bottom:max(7vh,44px);
+  animation:pulse 1.8s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
+.bfly-ambient{position:absolute;font-size:26px;opacity:.5;animation:drift linear infinite;pointer-events:none;filter:saturate(.4)}
+@keyframes drift{
+  0%{transform:translate(0,0) rotate(-8deg)}
+  25%{transform:translate(26px,-40px) rotate(8deg)}
+  50%{transform:translate(-14px,-84px) rotate(-6deg)}
+  75%{transform:translate(22px,-130px) rotate(9deg)}
+  100%{transform:translate(0,-180px) rotate(-8deg)}
+}
+
+/* ---------- scene 1 : wake nabi ---------- */
+#s1 .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:100%}
+#nabiWake{cursor:pointer;transition:transform .15s ease;position:relative}
+#nabiWake:active{transform:scale(.94)}
+.leaf{
+  width:170px;height:34px;border-radius:50%;
+  background:linear-gradient(180deg,#BCE3CD,#9ED2B4);
+  margin-top:-14px;
+  box-shadow:0 8px 18px rgba(92,68,87,.10);
+}
+#wakebar{
+  width:160px;height:13px;border-radius:999px;
+  background:rgba(255,255,255,.7);
+  margin-top:22px;overflow:hidden;
+  box-shadow:inset 0 1px 3px rgba(92,68,87,.16);
+}
+#wakebar i{
+  display:block;height:100%;width:0;border-radius:999px;
+  background:linear-gradient(90deg,var(--blossom-deep),var(--butter));
+  transition:width .25s ease;
+}
+#wakelbl{font-family:'Gaegu',cursive;font-size:1.05rem;color:var(--ink-soft);margin-top:7px}
+.zzz{
+  position:absolute;font-family:'Gaegu',cursive;font-weight:700;
+  color:var(--ink-soft);font-size:1.4rem;pointer-events:none;
+  animation:zfloat 1.6s ease-out forwards;white-space:nowrap;
+}
+@keyframes zfloat{0%{opacity:0;transform:translateY(0)}25%{opacity:1}100%{opacity:0;transform:translateY(-46px)}}
+
+/* ---------- scene 2 : lily garden ---------- */
+#s2 .garden{
+  flex:1;width:100%;position:relative;
+  display:flex;align-items:flex-end;justify-content:center;
+  padding-bottom:172px;
+}
+.lily{position:absolute;bottom:150px;width:74px;cursor:pointer;transition:transform .15s ease}
+.lily:active{transform:scale(.92)}
+.lily svg{width:100%;overflow:visible}
+.lily .petal{transform-origin:37px 34px;transform:scale(.18) rotate(0deg);transition:transform .9s cubic-bezier(.2,1.6,.4,1);opacity:0}
+.lily.bloomed .petal{opacity:1}
+.lily .budTop{transition:opacity .4s ease}
+.lily.bloomed .budTop{opacity:0}
+.lily.bloomed .petal{transform:scale(1) rotate(var(--rot))}
+.wordpop{
+  position:absolute;font-family:'Gaegu',cursive;font-weight:700;
+  font-size:1.5rem;color:var(--blossom-deep);pointer-events:none;
+  text-shadow:0 2px 0 rgba(255,255,255,.8);
+  animation:wordup 1.8s ease-out forwards;
+}
+@keyframes wordup{0%{opacity:0;transform:translateY(6px) scale(.7)}20%{opacity:1;transform:translateY(-8px) scale(1.05)}100%{opacity:0;transform:translateY(-64px) scale(1)}}
+#s2 .nabiSpot{position:absolute;top:16vh;left:50%;transform:translateX(-50%)}
+
+/* ---------- scene 3 : bee ---------- */
+#s3 .field{flex:1;width:100%;position:relative}
+#bee{position:absolute;width:96px;top:20vh;left:12%;animation:beebob 2.4s ease-in-out infinite}
+@keyframes beebob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-16px) rotate(3deg)}}
+#bee svg{width:100%;overflow:visible}
+#bee .beewing{transform-origin:48px 26px;animation:beewings .18s linear infinite alternate}
+@keyframes beewings{from{transform:rotate(-14deg)}to{transform:rotate(10deg)}}
+.pollen{
+  position:absolute;width:46px;height:46px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#FFF6D8,#FFDF8E 70%);
+  box-shadow:0 0 18px 6px rgba(255,223,142,.65);
+  cursor:grab;
+  touch-action:none;
+  animation:pollenbob 2s ease-in-out infinite;
+}
+@keyframes pollenbob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-10px) scale(1.06)}}
+.pollen.drag{animation:none;z-index:6;cursor:grabbing;box-shadow:0 0 26px 10px rgba(255,223,142,.85)}
+.pollen.got{animation:pollenpop .45s ease-out forwards;pointer-events:none}
+@keyframes pollenpop{40%{transform:scale(1.35);opacity:1}100%{transform:scale(.1);opacity:0}}
+#s3 .nabiSpot{position:absolute;top:17vh;right:12%}
+
+/* ---------- scene 4 : monument ---------- */
+#s4 .monwrap{flex:1;width:100%;position:relative;overflow:hidden}
+#tomb{position:absolute;bottom:150px;left:50%;transform:translateX(-50%);width:min(92vw,470px);opacity:.9}
+#vlogger{position:absolute;bottom:158px;left:50%;transform:translateX(-30%);width:74px;transition:transform .5s ease}
+#vlogger svg{width:100%;overflow:visible}
+#vlogger .armPhone{transform-origin:22px 46px;animation:vlogpan 3.4s ease-in-out infinite}
+@keyframes vlogpan{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-9deg)}}
+#tourists{
+  position:absolute;bottom:158px;left:-150px;display:flex;gap:6px;
+  transition:left 1.2s ease;
+}
+#tourists.in{left:calc(50% - 138px)}
+#tourists.flee{transition:left .8s ease-in;left:-170px}
+.tourist{width:34px}
+.tourist svg{width:100%;overflow:visible}
+#s4 .nabiSpot{position:absolute;top:12vh;left:8%}
+#recbar{
+  position:absolute;top:max(2.4vh,14px);left:50%;transform:translateX(-50%);
+  display:none;align-items:center;gap:8px;z-index:45;
+  font-family:'Gaegu',cursive;font-weight:700;font-size:1.1rem;color:#C0392B;
+  background:rgba(255,255,255,.8);border-radius:999px;padding:5px 14px;
+  white-space:nowrap;
+}
+#recbar.on{display:flex}
+#recbar i{width:10px;height:10px;border-radius:50%;background:#E74C3C;animation:pulse 1s infinite}
+.speech{
+  position:absolute;background:var(--white);border-radius:16px;
+  padding:9px 13px;font-size:.9rem;font-weight:600;max-width:190px;
+  box-shadow:0 6px 18px rgba(92,68,87,.16);
+  opacity:0;transition:opacity .4s ease;pointer-events:none;
+  line-height:1.35;
+}
+.speech.on{opacity:1}
+.speech:after{
+  content:'';position:absolute;bottom:-8px;left:26px;
+  border:9px solid transparent;border-top-color:var(--white);border-bottom:0;
+}
+
+/* ---------- scene 5 : rain ---------- */
+#s5 .rainwrap{flex:1;width:100%;position:relative}
+#rain{position:absolute;inset:0;pointer-events:none;transition:opacity 2.5s ease}
+#rain.stopped{opacity:0}
+.drop{
+  position:absolute;top:-30px;width:2px;height:22px;border-radius:2px;
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.75));
+  animation:fall linear infinite;
+}
+@keyframes fall{to{transform:translateY(110vh)}}
+#s5 .nabiSpot{position:absolute;top:34vh;left:50%;transform:translateX(-50%)}
+#umbrella{
+  position:absolute;top:26vh;left:50%;transform:translateX(-50%) translateY(18px);
+  width:170px;opacity:0;transition:opacity .5s ease,transform .5s ease;
+  pointer-events:none;
+}
+#umbrella.up{opacity:1;transform:translateX(-50%) translateY(0)}
+.subbar{
+  font-family:'Gaegu',cursive;text-align:center;
+  color:#FFF;text-shadow:0 1px 6px rgba(60,50,90,.5);
+  margin-top:max(3vh,18px);padding:0 24px;
+}
+.subbar .ko{font-size:1.5rem;font-weight:700;letter-spacing:.04em}
+.subbar .en{font-size:1.05rem;opacity:.9;font-family:'Quicksand',sans-serif;font-weight:500;margin-top:2px}
+#holdBtn{
+  position:relative;overflow:hidden;
+  background:var(--lavender);box-shadow:0 6px 0 #B3ABE3;
+  touch-action:none;
+}
+#holdBtn:active{box-shadow:0 2px 0 #B3ABE3}
+#holdBtn .fill{
+  position:absolute;inset:0;width:0%;
+  background:rgba(255,255,255,.55);border-radius:999px;
+  transition:width .1s linear;
+}
+#holdBtn .lbl{position:relative;z-index:1}
+
+/* ---------- scene 6 : finale ---------- */
+#s6 .finwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:0 26px;width:100%}
+.fincard{
+  background:rgba(255,255,255,.85);backdrop-filter:blur(8px);
+  border-radius:26px;padding:24px 22px;max-width:400px;
+  box-shadow:0 14px 40px rgba(92,68,87,.16);
+}
+.fincard p{font-size:1.02rem;line-height:1.55;font-weight:500;margin-bottom:12px;opacity:0;transform:translateY(8px);transition:opacity .8s ease,transform .8s ease}
+.fincard p.show{opacity:1;transform:none}
+.fincard .big{font-family:'Gaegu',cursive;font-weight:700;font-size:1.9rem;color:var(--blossom-deep);margin-bottom:6px}
+.credit{font-family:'Gaegu',cursive;font-size:1.1rem;color:var(--ink-soft);margin-top:14px;opacity:0;transition:opacity 1s ease}
+.credit.show{opacity:1}
+.burst-bfly{position:absolute;font-size:24px;pointer-events:none;animation:burstup linear forwards}
+@keyframes burstup{
+  0%{transform:translateY(0) rotate(0);opacity:0}
+  12%{opacity:1}
+  100%{transform:translateY(-105vh) translateX(var(--sway)) rotate(var(--spin));opacity:.75}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .nabi.flap .wingL,.nabi.flap .wingR,#bee,.pollen,.float,.bfly-ambient,
+  #bee .beewing,#vlogger .armPhone{animation:none !important}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <button id="backBtn">‹ back</button>
+  <div id="petals"><span></span><span></span><span></span><span></span></div>
+
+  <!-- ============ SCENE 0 : TITLE ============ -->
+  <section class="scene" id="s0">
+    <div class="titlewrap">
+      <div class="nabi flap float" style="--c-main:#F7B8D4;--c-stroke:#E39CBF;--c-spot:#FFD977;--c-low:#FFA872;--c-tip:#9DBBEF"><svg viewBox="0 0 200 180"></svg></div>
+      <h1>Nabi's Little<br>Adventure</h1>
+      <div class="sub">a tiny game, made just for <b>Shru</b> 🦋</div>
+    </div>
+    <div class="tapline">tap anywhere to begin</div>
+  </section>
+
+  <!-- ============ SCENE 1 : WAKE NABI ============ -->
+  <section class="scene" id="s1">
+    <div class="eyebrow">Somewhere in Delhi</div>
+    <div class="mid">
+      <div id="nabiWake">
+        <div class="nabi asleep" id="nabi1"><svg viewBox="0 0 200 180"></svg></div>
+        <div class="leaf"></div>
+      </div>
+      <div id="wakebar"><i></i></div>
+      <div id="wakelbl">wake-o-meter</div>
+    </div>
+    <div class="dialog" id="d1">
+      <div class="who"></div>
+      <div class="txt"></div>
+      <div class="hint">tap ▸</div>
+    </div>
+  </section>
+
+  <!-- ============ SCENE 2 : LILY GARDEN ============ -->
+  <section class="scene" id="s2">
+    <div class="eyebrow">Stop 1 · The Lily Garden</div>
+    <div class="garden" id="garden">
+      <div class="nabiSpot"><div class="nabi flap float" id="nabi2"><svg viewBox="0 0 200 180"></svg></div></div>
+    </div>
+    <div class="dialog" id="d2">
+      <div class="who"></div>
+      <div class="txt"></div>
+      <div class="hint">tap ▸</div>
+    </div>
+  </section>
+
+  <!-- ============ SCENE 3 : BEE ============ -->
+  <section class="scene" id="s3">
+    <div class="eyebrow">Stop 2 · A Very Loud Bee</div>
+    <div class="field" id="field">
+      <div id="bee">
+        <svg viewBox="0 0 96 72">
+          <ellipse class="beewing" cx="40" cy="18" rx="16" ry="10" fill="#EAF4FF" opacity=".85"/>
+          <ellipse class="beewing" cx="58" cy="16" rx="14" ry="9" fill="#F4FAFF" opacity=".8"/>
+          <ellipse cx="48" cy="40" rx="30" ry="21" fill="#FFD866"/>
+          <path d="M34 21 A30 21 0 0 0 34 59 L42 56 L42 24 Z" fill="#6B4F3A" opacity=".9"/>
+          <path d="M54 20 L54 60 L64 57 L64 23 Z" fill="#6B4F3A" opacity=".9"/>
+          <circle cx="70" cy="34" r="3.4" fill="#5C4457"/>
+          <path d="M64 45 q6 4 12 0" stroke="#5C4457" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+          <path d="M16 40 l-8 2" stroke="#6B4F3A" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="nabiSpot"><div class="nabi flap float" id="nabi3"><svg viewBox="0 0 200 180"></svg></div></div>
+    </div>
+    <div class="dialog" id="d3">
+      <div class="who"></div>
+      <div class="txt"></div>
+      <div class="hint">tap ▸</div>
+    </div>
+  </section>
+
+  <!-- ============ SCENE 4 : MONUMENT ============ -->
+  <section class="scene" id="s4">
+    <div class="eyebrow">Stop 3 · Humayun's Tomb</div>
+    <div id="recbar"><i></i> REC · viewers: 0</div>
+    <div class="monwrap">
+      <svg id="tomb" viewBox="0 0 470 240">
+        <rect x="35" y="150" width="400" height="90" rx="6" fill="#D8A8A0"/>
+        <rect x="20" y="212" width="430" height="28" rx="4" fill="#C99A93"/>
+        <path d="M155 150 L155 96 Q235 30 315 96 L315 150 Z" fill="#D8A8A0"/>
+        <path d="M175 150 L175 104 Q235 56 295 104 L295 150 Z" fill="#F6EFE7"/>
+        <path d="M205 150 L205 118 Q235 92 265 118 L265 150 Z" fill="#B58B85"/>
+        <ellipse cx="235" cy="62" rx="52" ry="34" fill="#F6EFE7"/>
+        <path d="M183 62 Q235 4 287 62 Z" fill="#F6EFE7"/>
+        <rect x="231" y="18" width="8" height="18" rx="3" fill="#EDCF8B"/>
+        <circle cx="235" cy="16" r="5" fill="#EDCF8B"/>
+        <g fill="#B58B85">
+          <path d="M75 150 L75 128 Q92 112 109 128 L109 150 Z"/>
+          <path d="M361 150 L361 128 Q378 112 395 128 L395 150 Z"/>
+        </g>
+        <g fill="#F6EFE7">
+          <rect x="60" y="96" width="10" height="54" rx="4"/>
+          <ellipse cx="65" cy="92" rx="16" ry="10"/>
+          <rect x="400" y="96" width="10" height="54" rx="4"/>
+          <ellipse cx="405" cy="92" rx="16" ry="10"/>
+        </g>
+      </svg>
+      <div id="vlogger">
+        <svg viewBox="0 0 74 110">
+          <g class="armPhone">
+            <path d="M22 46 Q6 40 2 28" stroke="#F5D7BD" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <rect x="-8" y="12" width="16" height="26" rx="4" fill="#4A3B4A" transform="rotate(-12 0 25)"/>
+          </g>
+          <rect x="20" y="42" width="34" height="42" rx="14" fill="#8FB8DE"/>
+          <path d="M28 84 L28 106 M46 84 L46 106" stroke="#5C4457" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="37" cy="24" r="17" fill="#FBE8D3"/>
+          <path d="M21 18 Q28 4 44 8 Q54 11 53 20 Q46 12 36 14 Q26 16 21 18Z" fill="#3E3244"/>
+          <circle cx="31" cy="24" r="2" fill="#3E3244"/>
+          <circle cx="43" cy="24" r="2" fill="#3E3244"/>
+          <path d="M33 31 q4 3 8 0" stroke="#3E3244" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div id="tourists">
+        <div class="tourist"><svg viewBox="0 0 34 80"><circle cx="17" cy="12" r="10" fill="#E8B88A"/><rect x="7" y="24" width="20" height="30" rx="9" fill="#F2A7B8"/><path d="M12 54 L12 76 M22 54 L22 76" stroke="#5C4457" stroke-width="6" stroke-linecap="round"/></svg></div>
+        <div class="tourist"><svg viewBox="0 0 34 80"><circle cx="17" cy="12" r="10" fill="#D9A06B"/><rect x="7" y="24" width="20" height="30" rx="9" fill="#9BC8E8"/><path d="M12 54 L12 76 M22 54 L22 76" stroke="#5C4457" stroke-width="6" stroke-linecap="round"/></svg></div>
+        <div class="tourist"><svg viewBox="0 0 34 80"><circle cx="17" cy="12" r="10" fill="#E8C79A"/><rect x="7" y="24" width="20" height="30" rx="9" fill="#BFE3C8"/><path d="M12 54 L12 76 M22 54 L22 76" stroke="#5C4457" stroke-width="6" stroke-linecap="round"/></svg></div>
+      </div>
+      <div class="speech" id="speech"></div>
+      <div class="nabiSpot"><div class="nabi flap float" id="nabi4"><svg viewBox="0 0 200 180"></svg></div></div>
+    </div>
+    <div class="dialog" id="d4">
+      <div class="who"></div>
+      <div class="txt"></div>
+      <div class="hint">tap ▸</div>
+    </div>
+  </section>
+
+  <!-- ============ SCENE 5 : RAIN ============ -->
+  <section class="scene" id="s5">
+    <div class="eyebrow" style="color:#F3F0FF">Stop 4 · A Sudden Rain</div>
+    <div class="subbar" id="sub5">
+      <div class="ko">비가 와도 괜찮아</div>
+      <div class="en">even if it rains, it's okay</div>
+    </div>
+    <div class="rainwrap">
+      <div id="rain"></div>
+      <svg id="umbrella" viewBox="0 0 170 150">
+        <path d="M85 14 Q20 20 10 76 Q28 62 45 76 Q66 58 85 76 Q104 58 125 76 Q142 62 160 76 Q150 20 85 14Z" fill="#F7B8D4"/>
+        <path d="M85 14 Q66 58 85 76 Q104 58 85 14Z" fill="#FFD9E8"/>
+        <path d="M85 76 L85 132 Q85 144 96 144" stroke="#5C4457" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <path d="M85 8 L85 16" stroke="#5C4457" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <div class="nabiSpot"><div class="nabi" id="nabi5"><svg viewBox="0 0 200 180"></svg></div></div>
+    </div>
+    <div class="dialog" id="d5">
+      <div class="who"></div>
+      <div class="txt"></div>
+      <div class="hint">tap ▸</div>
+    </div>
+  </section>
+
+  <!-- ============ SCENE 6 : FINALE ============ -->
+  <section class="scene" id="s6">
+    <div class="finwrap">
+      <div class="nabi flap float" id="nabi6" style="width:150px;height:138px"><svg viewBox="0 0 200 180"></svg></div>
+      <div class="fincard" id="fincard">
+        <div class="big" style="opacity:1">Nabi is back! 🌸</div>
+        <p>"Look at me. LOOK at me. I'm a whole festival."</p>
+        <p>"But Shru... can I tell you a secret? The colors were never in the lilies. Or the pollen. Or the funny Gujarati man."</p>
+        <p>"They came back because someone kind walked with me the whole way."</p>
+        <p>Some days feel grey. Yours will get their colors back too. One gentle stop at a time.</p>
+        <p class="big" style="margin-top:4px">힘내, Shru 🦋<br><span style="font-size:1rem;font-family:'Quicksand',sans-serif;color:var(--ink-soft)">(you've got this)</span></p>
+      </div>
+      <div class="credit" id="credit">made with care, by your friendly<br>neighbourhood fake vlogger 🎥</div>
+      <div class="btnrow"><button class="btn" id="replay" style="visibility:hidden">walk with Nabi again</button></div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ================= butterfly svg =================
+   four colorable parts per wing:
+   wmain = big upper wing (pink), wspot = round spot (yellow),
+   wlow = lower wing (orange), wtip = small tip dot (blue) */
+const NABI_SVG = `
+<g class="wingL">
+  <path class="wmain" d="M96 84 Q42 12 16 40 Q0 66 46 92 Q74 96 96 84 Z" stroke-width="2"/>
+  <path class="wlow" d="M93 97 Q40 94 26 114 Q18 140 46 141 Q78 136 95 105 Z" stroke-width="2"/>
+  <circle class="wspot" cx="46" cy="54" r="9"/>
+  <circle class="wtip" cx="46" cy="121" r="6.5"/>
+</g>
+<g class="wingR">
+  <path class="wmain" d="M104 84 Q158 12 184 40 Q200 66 154 92 Q126 96 104 84 Z" stroke-width="2"/>
+  <path class="wlow" d="M107 97 Q160 94 174 114 Q182 140 154 141 Q122 136 105 105 Z" stroke-width="2"/>
+  <circle class="wspot" cx="154" cy="54" r="9"/>
+  <circle class="wtip" cx="154" cy="121" r="6.5"/>
+</g>
+<ellipse cx="100" cy="96" rx="9" ry="26" fill="#5C4457"/>
+<circle cx="100" cy="66" r="11" fill="#5C4457"/>
+<circle cx="96" cy="63" r="1.8" fill="#FFF"/>
+<circle cx="104" cy="63" r="1.8" fill="#FFF"/>
+<path d="M97 70 q3 2.4 6 0" stroke="#FFF" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<path d="M94 57 Q86 42 78 40" stroke="#5C4457" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<path d="M106 57 Q114 42 122 40" stroke="#5C4457" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<circle cx="78" cy="40" r="3" fill="#5C4457"/>
+<circle cx="122" cy="40" r="3" fill="#5C4457"/>`;
+document.querySelectorAll('.nabi svg').forEach(s=>s.innerHTML=NABI_SVG);
+
+/* ================= helpers ================= */
+const $=q=>document.querySelector(q);
+const root=document.documentElement;
+let colorStep=0,currentScene='s0';
+function buzz(ms=12){try{navigator.vibrate&&navigator.vibrate(ms)}catch(e){}}
+/* each stop earns one real color on Nabi's wings */
+function setColor(step){
+  colorStep=step;
+  root.style.setProperty('--c-main', step>=1?'#F7B8D4':'#C9C3CB');
+  root.style.setProperty('--c-stroke',step>=1?'#E39CBF':'#A9A2AB');
+  root.style.setProperty('--c-spot', step>=2?'#FFD977':'#BBB5BD');
+  root.style.setProperty('--c-low', step>=3?'#FFA872':'#D6D0D8');
+  root.style.setProperty('--c-tip', step>=4?'#9DBBEF':'#B0AAB2');
+  document.querySelectorAll('#petals span').forEach((p,i)=>p.classList.toggle('lit',i<step));
+}
+function go(id){
+  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('on'));
+  $(id).classList.add('on');
+  currentScene=id.slice(1);
+  $('#backBtn').classList.toggle('show',currentScene!=='s0');
+}
+/* dialogue engine: tap the dialog to advance */
+function playLines(dEl,lines,onDone){
+  dEl.querySelectorAll('.btnrow').forEach(r=>r.remove());
+  const who=dEl.querySelector('.who'),txt=dEl.querySelector('.txt'),hint=dEl.querySelector('.hint');
+  let i=0;
+  function render(){
+    const L=lines[i];
+    who.textContent=L.who||'';
+    txt.innerHTML=L.text;
+    hint.classList.toggle('off',!!L.hold||i===lines.length-1&&!!L.stay);
+    if(L.on)L.on();
+  }
+  function adv(){
+    if(lines[i].hold)return;
+    i++;
+    if(i>=lines.length){dEl.onclick=null;onDone&&onDone();return}
+    buzz(8);render();
+  }
+  dEl.onclick=adv;
+  render();
+}
+function showButtons(dEl,btns){
+  const row=document.createElement('div');
+  row.className='btnrow';
+  btns.forEach(b=>{
+    const el=document.createElement('button');
+    el.className='btn'+(b.ghost?' ghost':'');
+    el.textContent=b.label;
+    el.onclick=e=>{e.stopPropagation();buzz(14);row.remove();b.act()};
+    row.appendChild(el);
+  });
+  dEl.appendChild(row);
+}
+
+/* ================= scene 0 : title ================= */
+(function(){
+  const s=$('#s0');
+  const em=['🦋','🌸','🐝','🌷'];
+  for(let i=0;i<7;i++){
+    const b=document.createElement('div');
+    b.className='bfly-ambient';
+    b.textContent=em[i%em.length];
+    b.style.left=(8+Math.random()*84)+'%';
+    b.style.top=(30+Math.random()*60)+'%';
+    b.style.animationDuration=(9+Math.random()*8)+'s';
+    b.style.animationDelay=(-Math.random()*9)+'s';
+    s.appendChild(b);
+  }
+  s.onclick=()=>{buzz(15);startScene1()};
+})();
+
+/* ================= scene 1 : wake ================= */
+const WAKE_TAPS=6;
+const SLEEPY=['zzz...','zzz... zzz...','mmm... five more minutes...','the sun is so loud today...','wait. someone smells like lilies...','...huh?!'];
+function startScene1(){
+  go('#s1');setColor(0);
+  const nabi=$('#nabi1'),wrap=$('#nabiWake'),d=$('#d1'),bar=$('#wakebar i');
+  nabi.classList.add('asleep');nabi.classList.remove('flap');
+  bar.style.width='0%';
+  wrap.querySelectorAll('.zzz').forEach(z=>z.remove());
+  let taps=0;
+  playLines(d,[
+    {text:`This is <b>Nabi</b>. Last night, all her colors flew away.<br><i>(It happens to the best of us.)</i>`},
+    {text:`She's still asleep. And she is a <i>deep</i> sleeper. <b>Tap her gently</b> until the wake-o-meter fills up.`,hold:true}
+  ]);
+  wrap.onclick=()=>{
+    if(taps>=WAKE_TAPS)return;
+    buzz(12);
+    const z=document.createElement('div');
+    z.className='zzz';
+    z.textContent=SLEEPY[Math.min(taps,SLEEPY.length-1)];
+    z.style.left=(15+Math.random()*30)+'%';
+    z.style.top='-8px';
+    wrap.appendChild(z);
+    setTimeout(()=>z.remove(),1700);
+    taps++;
+    bar.style.width=Math.round(taps/WAKE_TAPS*100)+'%';
+    if(taps===WAKE_TAPS){
+      nabi.classList.remove('asleep');
+      nabi.classList.add('flap');
+      setTimeout(()=>{
+        playLines(d,[
+          {who:'Nabi',text:`oh no. oh no no no. I'm <b>GREY</b>. I look like a government office file.`},
+          {who:'Nabi',text:`wait... you're Shru, aren't you? I've heard from the lilies, they talk about you.`},
+          {who:'Nabi',text:`my colors are hiding somewhere out there in Delhi. will you walk with me and help me find them?`},
+          {text:`Of course you will. That's just who you are.`,stay:true,on:()=>showButtons(d,[{label:'let’s find them 🌸',act:startScene2}])}
+        ]);
+      },700);
+    }
+  };
+}
+
+/* ================= scene 2 : lilies ================= */
+const LILY_WORDS=['soft','brave','warm','kind','loved'];
+function makeLily(){
+  const div=document.createElement('div');
+  div.className='lily';
+  div.innerHTML=`<svg viewBox="0 0 74 110">
+    <path d="M37 44 L37 108" stroke="#8FBF9F" stroke-width="4" stroke-linecap="round"/>
+    <path d="M37 84 Q18 76 14 62 Q34 64 37 78Z" fill="#A9D8B8"/>
+    ${[0,60,120,180,240,300].map(r=>`
+      <path class="petal" style="--rot:${r}deg" transform="rotate(${r} 37 34)"
+        d="M37 34 Q28 16 37 2 Q46 16 37 34Z" fill="${r%120===0?'#FFE3EF':'#FFF6FA'}" stroke="#F0BAD2" stroke-width="1.4"/>`).join('')}
+    <circle class="petal" style="--rot:0deg" cx="37" cy="34" r="6" fill="#FFD977"/>
+    <g class="budTop">
+      <ellipse cx="37" cy="30" rx="10" ry="16" fill="#FFD1E5"/>
+      <path d="M37 14 Q43 24 37 46 Q31 24 37 14Z" fill="#F7B8D4"/>
+      <path d="M31 42 Q37 50 43 42 L37 30 Z" fill="#A9D8B8"/>
+    </g>
+  </svg>`;
+  return div;
+}
+function startScene2(){
+  go('#s2');setColor(0);
+  const g=$('#garden'),d=$('#d2');
+  g.querySelectorAll('.lily,.wordpop').forEach(el=>el.remove());
+  const pos=[[8,150],[27,196],[46,150],[64,196],[81,152]];
+  let bloomed=0;
+  playLines(d,[
+    {text:`The lilies of this garden are keeping Nabi's <b>pink</b>. But they only bloom for gentle hands.`},
+    {text:`<b>Tap each bud</b> and see what happens.`,hold:true}
+  ]);
+  pos.forEach(p=>{
+    const lily=makeLily();
+    lily.style.left=p[0]+'%';
+    lily.style.bottom=p[1]+'px';
+    g.appendChild(lily);
+    lily.onclick=()=>{
+      if(lily.classList.contains('bloomed'))return;
+      lily.classList.add('bloomed');buzz(15);
+      const w=document.createElement('div');
+      w.className='wordpop';w.textContent=LILY_WORDS[bloomed];
+      w.style.left=`calc(${p[0]}% + 4px)`;
+      w.style.bottom=(p[1]+108)+'px';
+      g.appendChild(w);setTimeout(()=>w.remove(),1900);
+      bloomed++;
+      if(bloomed===5){
+        setColor(1);
+        setTimeout(()=>{
+          playLines(d,[
+            {who:'Nabi',text:`<b>PINK!</b> okay okay okay. I feel 20% prettier already.`},
+            {text:`(The lilies say hi, by the way. They know they are your favorite.)`},
+            {who:'Nabi',text:`I hear buzzing. very loud, very confident buzzing. come on!`,stay:true,
+              on:()=>showButtons(d,[{label:'follow the buzz 🐝',act:startScene3}])}
+          ]);
+        },900);
+      }
+    };
+  });
+}
+
+/* ================= scene 3 : bee ================= */
+function startScene3(){
+  go('#s3');setColor(1);
+  const f=$('#field'),d=$('#d3');
+  f.querySelectorAll('.pollen').forEach(p=>p.remove());
+  let got=0,total=6;
+  playLines(d,[
+    {who:'???',text:`HELLO. I am <b>Bumble</b>. Chief Pollen Officer, South Delhi Division.`},
+    {who:'Bumble',text:`you want Nabi's <b>yellow</b> back? easy. I traded it for safekeeping. bees are very responsible.`},
+    {who:'Bumble',text:`bring me <b>6 pollen sparkles</b> and it's yours. <b>drag each sparkle to me!</b> (careful. they are ticklish.)`,hold:true,
+      on:()=>spawnPollen()}
+  ]);
+  function spawnPollen(){
+    const SLOTS=[[40,26],[64,22],[78,42],[46,44],[66,58],[38,64]];
+    for(let i=0;i<total;i++){
+      const p=document.createElement('div');
+      p.className='pollen';
+      p.style.left=(SLOTS[i][0]+(Math.random()*6-3))+'%';
+      p.style.top=(SLOTS[i][1]+(Math.random()*6-3))+'%';
+      p.style.animationDelay=(-Math.random()*2)+'s';
+      f.appendChild(p);
+      p.addEventListener('pointerdown',e=>{
+        if(p.classList.contains('got'))return;
+        e.preventDefault();
+        p.setPointerCapture(e.pointerId);
+        p.classList.add('drag');
+        const startLeft=p.style.left,startTop=p.style.top;
+        const move=ev=>{
+          const fr=f.getBoundingClientRect();
+          p.style.left=(ev.clientX-fr.left-23)+'px';
+          p.style.top=(ev.clientY-fr.top-23)+'px';
+        };
+        move(e);
+        p.onpointermove=move;
+        const finish=()=>{
+          p.onpointermove=null;p.onpointerup=null;p.onpointercancel=null;
+          p.classList.remove('drag');
+          const br=$('#bee').getBoundingClientRect();
+          const pr=p.getBoundingClientRect();
+          const dx=(pr.left+pr.width/2)-(br.left+br.width/2);
+          const dy=(pr.top+pr.height/2)-(br.top+br.height/2);
+          if(Math.hypot(dx,dy)<85){collect(p)}
+          else{p.style.left=startLeft;p.style.top=startTop}
+        };
+        p.onpointerup=finish;
+        p.onpointercancel=finish;
+      });
+    }
+  }
+  function collect(p){
+    p.classList.add('got');buzz(12);got++;
+    if(got===total){
+      setColor(2);
+      setTimeout(()=>{
+        playLines(d,[
+          {who:'Bumble',text:`excellent work. you have <b>strong pollen energy</b>. that is the highest compliment we bees give.`},
+          {who:'Bumble',text:`before you go... ask me anything.`,stay:true,
+            on:()=>showButtons(d,[
+              {label:'ask for advice',act:()=>beeEnd('advice')},
+              {label:'ask for a joke',ghost:true,act:()=>beeEnd('joke')}
+            ])}
+        ]);
+      },700);
+    }
+  }
+  function beeEnd(kind){
+    const lines= kind==='advice' ? [
+      {who:'Bumble',text:`flowers don't rush to bloom. and they turn out beautiful every single time. <i>every. single. time.</i> just saying.`},
+      {who:'Nabi',text:`...that was weirdly wise for someone with 5 brain cells.`},
+      {who:'Bumble',text:`6 brain cells. onwards! the big monument is waiting!`,stay:true,
+        on:()=>showButtons(d,[{label:'to Humayun’s Tomb 🏛️',act:startScene4}])}
+    ] : [
+      {who:'Bumble',text:`when do bees get married?<br>...<br>when they've found their <b>honey</b>!`},
+      {who:'Nabi',text:`Nabi pretends she didn't laugh. She laughed.`},
+      {who:'Bumble',text:`I have more! no? okay. onwards! the big monument is waiting!`,stay:true,
+        on:()=>showButtons(d,[{label:'to Humayun’s Tomb 🏛️',act:startScene4}])}
+    ];
+    playLines(d,lines);
+  }
+}
+
+/* ================= scene 4 : monument ================= */
+function startScene4(){
+  go('#s4');setColor(2);
+  const d=$('#d4'),tourists=$('#tourists'),speech=$('#speech'),rec=$('#recbar'),nabi=$('#nabi4');
+  tourists.classList.remove('in','flee');
+  rec.classList.remove('on');
+  speech.classList.remove('on');
+  function say(text,x,y){
+    speech.innerHTML=text;
+    speech.style.left=x;speech.style.bottom=y;
+    speech.classList.add('on');
+  }
+  function shh(){speech.classList.remove('on')}
+  playLines(d,[
+    {text:`Nabi's <b>orange</b> is somewhere around this monument. But wait. Who is <i>that</i>?`},
+    {text:`A mysterious, suspiciously fair-skinned man is... vlogging? Look closely. He is only <b>acting</b> like he's vlogging. He isn't recording anything at all.`},
+    {who:'Nabi',text:`oh no. here comes a tourist family. <i>(people always think he is a foreigner.)</i>`,
+      on:()=>{tourists.classList.add('in')}},
+    {who:'Tourists',text:`"Excuse me sir!! Photo please!! Which country you from??"`,
+      on:()=>say('which country sir?? 📸','12%','300px')},
+    {who:'The Man',text:`<i>(calmly, with the peace of a thousand monks)</i><br>"Bhai. Main <b>Gujarati</b> hoon."`,
+      on:()=>{shh();say('bhai. Gujarati hoon. 😐','52%','310px')}},
+    {text:`The tourists have never walked away faster. One of them apologized to the monument.`,
+      on:()=>{shh();tourists.classList.add('flee')}},
+    {text:`Unbothered, he resumes his fake vlogging... <i>"So guys, behind me is the tomb of Humayun, and today we are exploring..."</i>`,
+      on:()=>{rec.classList.add('on');say('so guys, behind me... 🎥','48%','320px')}},
+    {text:`There is no recording. There are <b>zero viewers</b>. He does not care. He is living his best life.`},
+    {who:'Nabi',text:`HAHAHAHA. I can't. I CAN'T. <i>(laughs so hard she flips upside down mid-air)</i>`,
+      on:()=>{shh();nabi.classList.add('spin');setTimeout(()=>nabi.classList.remove('spin'),1100);setColor(3)}},
+    {who:'Nabi',text:`I like him. confusing on the outside, Gujarati on the inside. and look! my <b>orange</b> came back from laughing!`},
+    {who:'Nabi',text:`hmm... the sky is getting darker. one last color to find.`,stay:true,
+      on:()=>{rec.classList.remove('on');showButtons(d,[{label:'follow the clouds ☁️',act:startScene5}])}}
+  ]);
+}
+
+/* ================= scene 5 : rain ================= */
+function startScene5(){
+  go('#s5');setColor(3);
+  const d=$('#d5'),rain=$('#rain'),umb=$('#umbrella'),scene=$('#s5');
+  rain.innerHTML='';
+  rain.classList.remove('stopped');
+  scene.classList.remove('cleared');
+  umb.classList.remove('up');
+  $('#nabi5').classList.remove('flap');
+  $('#sub5').innerHTML=`<div class="ko">비가 와도 괜찮아</div><div class="en">even if it rains, it's okay</div>`;
+  for(let i=0;i<44;i++){
+    const dr=document.createElement('div');
+    dr.className='drop';
+    dr.style.left=Math.random()*100+'%';
+    dr.style.animationDuration=(0.7+Math.random()*0.7)+'s';
+    dr.style.animationDelay=(-Math.random()*1.4)+'s';
+    rain.appendChild(dr);
+  }
+  playLines(d,[
+    {text:`Some clouds just show up, uninvited. It's not your fault they came. It never was.`},
+    {who:'Nabi',text:`I don't mind the rain so much... it's just heavy to sit in it alone.`},
+    {text:`<b>Press and hold</b> to share your umbrella with Nabi, until the rain passes.`,hold:true,
+      on:()=>makeHoldBtn()}
+  ]);
+  function makeHoldBtn(){
+    const row=document.createElement('div');row.className='btnrow';
+    const b=document.createElement('button');
+    b.className='btn';b.id='holdBtn';
+    b.innerHTML=`<span class="fill"></span><span class="lbl">hold to share ☂️</span>`;
+    row.appendChild(b);d.appendChild(row);
+    const fill=b.querySelector('.fill');
+    let prog=0,t=null;
+    function start(e){
+      e.preventDefault();umb.classList.add('up');buzz(10);
+      t=setInterval(()=>{
+        prog=Math.min(100,prog+2.2);
+        fill.style.width=prog+'%';
+        if(prog>=100){clearInterval(t);done()}
+      },80);
+    }
+    function stop(){if(prog<100){clearInterval(t);umb.classList.remove('up')}}
+    b.addEventListener('pointerdown',start);
+    b.addEventListener('pointerup',stop);
+    b.addEventListener('pointerleave',stop);
+    b.addEventListener('pointercancel',stop);
+    b.addEventListener('contextmenu',e=>e.preventDefault());
+    function done(){
+      buzz(25);
+      rain.classList.add('stopped');
+      scene.classList.add('cleared');
+      $('#sub5').innerHTML=`<div class="ko">비 온 뒤에 땅이 굳는다</div><div class="en">after the rain, the ground grows firmer</div>`;
+      $('#nabi5').classList.add('flap');
+      setColor(4);
+      row.remove();
+      setTimeout(()=>{
+        playLines(d,[
+          {text:`The rain always passes. <b>Always.</b> And you never have to wait it out alone.`},
+          {who:'Nabi',text:`...my <b>blue</b> came back. the softest one. it was hiding under your umbrella the whole time.`},
+          {who:'Nabi',text:`Shru. look at the sky. and look at ME. come see!`,stay:true,
+            on:()=>showButtons(d,[{label:'see Nabi shine ✨',act:startScene6}])}
+        ]);
+      },2400);
+    }
+  }
+}
+
+/* ================= scene 6 : finale ================= */
+let s6timers=[],s6burst=null;
+function startScene6(){
+  go('#s6');setColor(4);
+  const wrap=$('#s6');
+  s6timers.forEach(clearTimeout);s6timers=[];
+  if(s6burst)clearInterval(s6burst);
+  wrap.querySelectorAll('.burst-bfly').forEach(b=>b.remove());
+  const ps=document.querySelectorAll('#fincard p');
+  ps.forEach(p=>p.classList.remove('show'));
+  $('#credit').classList.remove('show');
+  $('#replay').style.visibility='hidden';
+  /* butterfly + petal burst */
+  const em=['🦋','🦋','🌸','🐝','🌷','💗'];
+  let n=0;
+  s6burst=setInterval(()=>{
+    n++;
+    const b=document.createElement('div');
+    b.className='burst-bfly';
+    b.textContent=em[Math.floor(Math.random()*em.length)];
+    b.style.left=(4+Math.random()*92)+'%';
+    b.style.bottom='-30px';
+    b.style.setProperty('--sway',(Math.random()*90-45)+'px');
+    b.style.setProperty('--spin',(Math.random()*70-35)+'deg');
+    b.style.animationDuration=(5+Math.random()*4)+'s';
+    wrap.appendChild(b);
+    setTimeout(()=>b.remove(),9500);
+    if(n>34)clearInterval(s6burst);
+  },260);
+  /* reveal lines one by one */
+  ps.forEach((p,i)=>s6timers.push(setTimeout(()=>p.classList.add('show'),900+i*1600)));
+  s6timers.push(setTimeout(()=>{$('#credit').classList.add('show')},900+ps.length*1600));
+  s6timers.push(setTimeout(()=>{$('#replay').style.visibility='visible'},1400+ps.length*1600));
+  $('#replay').onclick=()=>{location.href=location.pathname};
+}
+
+/* ================= back button ================= */
+const STARTERS={s0:()=>{go('#s0');setColor(0)},s1:startScene1,s2:startScene2,s3:startScene3,s4:startScene4,s5:startScene5,s6:startScene6};
+const PREV={s1:'s0',s2:'s1',s3:'s2',s4:'s3',s5:'s4',s6:'s5'};
+$('#backBtn').addEventListener('click',e=>{
+  e.stopPropagation();buzz(10);
+  const p=PREV[currentScene];
+  if(p)STARTERS[p]();
+});
+
+/* ================= boot / debug ================= */
+setColor(0);
+const q=new URLSearchParams(location.search);
+const jump=q.get('scene');
+if(jump&&STARTERS['s'+jump])STARTERS['s'+jump]();
+else go('#s0');
+/* debug: ?scene=N&taps=M taps the dialog M times for screenshots */
+const dbgTaps=parseInt(q.get('taps')||'0',10);
+if(jump&&dbgTaps>0){
+  setTimeout(()=>{
+    const dd=$('#s'+jump+' .dialog');
+    for(let i=0;i<dbgTaps;i++)dd&&dd.click();
+  },600);
+}
+</script>
+</body>
+</html>
