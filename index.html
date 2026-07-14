@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>For Shru 🦋</title>
 <meta property="og:title" content="Nabi's Little Adventure">
 <meta property="og:description" content="A tiny game, made just for Shru.">
@@ -20,6 +20,8 @@
   --ink:#5C4457;
   --ink-soft:#8A7085;
   --white:#FFFFFF;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
   /* nabi wing colors: start grey, earned per stop */
   --c-main:#C9C3CB;
   --c-stroke:#A9A2AB;
@@ -67,70 +69,70 @@ body{
 
 /* ---------- shared bits ---------- */
 .eyebrow{
-  font-family:'Gaegu',cursive;font-weight:700;font-size:1.05rem;
-  letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);
-  margin-top:max(3.4vh,20px);
+  align-self:flex-start;
+  font-family:'Gaegu',cursive;font-weight:700;font-size:.9rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);
+  margin:calc(var(--safe-top) + 12px) 0 0 16px;
+  padding-right:96px;
+  white-space:nowrap;
 }
 h1,h2{font-family:'Gaegu',cursive;font-weight:700;line-height:1.05}
-h1{font-size:clamp(2.6rem,11vw,3.6rem)}
-h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
+h1{font-size:clamp(2.4rem,10.5vw,3.4rem)}
 
+/* story box now lives at the TOP so characters own the screen */
 .dialog{
-  position:absolute;left:5%;right:5%;bottom:max(4.5vh,28px);
-  background:rgba(255,255,255,.88);
+  position:absolute;left:4%;right:4%;
+  top:calc(var(--safe-top) + 44px);
+  background:rgba(255,255,255,.9);
   backdrop-filter:blur(8px);
-  border-radius:22px;
-  padding:18px 20px 15px;
+  border-radius:20px;
+  padding:14px 16px 13px;
   box-shadow:0 10px 30px rgba(92,68,87,.14);
-  min-height:112px;
-  cursor:pointer;
+  min-height:92px;
 }
 .dialog .who{
   font-family:'Gaegu',cursive;font-weight:700;font-size:1.05rem;
   color:var(--blossom-deep);letter-spacing:.06em;margin-bottom:2px;
 }
 .dialog .who:empty{display:none}
-.dialog .txt{font-size:1.02rem;line-height:1.5;font-weight:500}
-.dialog .hint{
-  position:absolute;right:16px;bottom:9px;
-  font-family:'Gaegu',cursive;font-size:.95rem;color:var(--ink-soft);
-  animation:nudge 1.4s ease-in-out infinite;
-}
-@keyframes nudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
-.dialog .hint.off{display:none}
+.dialog .txt{font-size:.98rem;line-height:1.45;font-weight:500}
 
 .btn{
-  font-family:'Gaegu',cursive;font-weight:700;font-size:1.25rem;
+  font-family:'Gaegu',cursive;font-weight:700;font-size:1.2rem;
   color:var(--ink);
   background:var(--blossom);
   border:none;border-radius:999px;
-  padding:13px 30px;
-  box-shadow:0 6px 0 var(--blossom-deep);
+  padding:13px 22px;
+  box-shadow:0 5px 0 var(--blossom-deep);
   cursor:pointer;
-  transition:transform .12s ease, box-shadow .12s ease;
+  transition:transform .12s ease, box-shadow .12s ease, opacity .3s ease;
 }
-.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--blossom-deep)}
-.btn.ghost{background:var(--butter);box-shadow:0 6px 0 #EDCF8B}
-.btn.ghost:active{box-shadow:0 2px 0 #EDCF8B}
-.btnrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:14px}
-.dialog .btnrow{margin-top:12px;margin-bottom:4px}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--blossom-deep)}
+.btn.ghost{background:var(--butter);box-shadow:0 5px 0 #EDCF8B}
+.btn.ghost:active{box-shadow:0 1px 0 #EDCF8B}
+.btn:disabled{opacity:.45;pointer-events:none}
 
-/* back button */
-#backBtn{
-  position:absolute;top:max(2.4vh,14px);left:16px;z-index:60;
-  font-family:'Gaegu',cursive;font-weight:700;font-size:1.05rem;
-  color:var(--ink-soft);
-  background:rgba(255,255,255,.78);
-  border:none;border-radius:999px;padding:7px 15px 7px 12px;
-  box-shadow:0 3px 10px rgba(92,68,87,.14);
-  cursor:pointer;display:none;
+/* bottom navigation bar */
+#nav{
+  position:absolute;left:4%;right:4%;
+  bottom:calc(var(--safe-bottom) + 14px);
+  display:flex;gap:10px;z-index:55;
 }
-#backBtn.show{display:block}
-#backBtn:active{transform:translateY(2px)}
+#nav.hidden{display:none}
+#prevBtn{
+  flex:0 0 auto;
+  font-size:1.05rem;padding:12px 16px;
+  color:var(--ink-soft);
+  background:rgba(255,255,255,.85);
+  box-shadow:0 5px 0 rgba(92,68,87,.16);
+}
+#prevBtn:active{box-shadow:0 1px 0 rgba(92,68,87,.16)}
+#navSlot{flex:1;display:flex;gap:10px}
+#navSlot .btn{flex:1;padding:12px 8px;white-space:nowrap}
 
 /* petal progress dots: each slot lights in its own earned color */
 #petals{
-  position:absolute;top:max(2.4vh,14px);right:16px;
+  position:absolute;top:calc(var(--safe-top) + 14px);right:16px;
   display:flex;gap:7px;z-index:40;
 }
 #petals span{
@@ -168,7 +170,7 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
 #s0 .sub{font-size:1.05rem;color:var(--ink-soft);font-weight:500;margin-top:10px}
 #s0 .tapline{
   font-family:'Gaegu',cursive;font-size:1.3rem;color:var(--ink-soft);
-  margin-bottom:max(7vh,44px);
+  margin-bottom:calc(var(--safe-bottom) + max(7vh,44px));
   animation:pulse 1.8s ease-in-out infinite;
 }
 @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
@@ -182,7 +184,7 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
 }
 
 /* ---------- scene 1 : wake nabi ---------- */
-#s1 .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;width:100%}
+#s1 .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;padding-top:14vh}
 #nabiWake{cursor:pointer;transition:transform .15s ease;position:relative}
 #nabiWake:active{transform:scale(.94)}
 .leaf{
@@ -211,12 +213,8 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
 @keyframes zfloat{0%{opacity:0;transform:translateY(0)}25%{opacity:1}100%{opacity:0;transform:translateY(-46px)}}
 
 /* ---------- scene 2 : lily garden ---------- */
-#s2 .garden{
-  flex:1;width:100%;position:relative;
-  display:flex;align-items:flex-end;justify-content:center;
-  padding-bottom:172px;
-}
-.lily{position:absolute;bottom:150px;width:74px;cursor:pointer;transition:transform .15s ease}
+#s2 .garden{flex:1;width:100%;position:relative}
+.lily{position:absolute;width:72px;cursor:pointer;transition:transform .15s ease}
 .lily:active{transform:scale(.92)}
 .lily svg{width:100%;overflow:visible}
 .lily .petal{transform-origin:37px 34px;transform:scale(.18) rotate(0deg);transition:transform .9s cubic-bezier(.2,1.6,.4,1);opacity:0}
@@ -231,11 +229,11 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
   animation:wordup 1.8s ease-out forwards;
 }
 @keyframes wordup{0%{opacity:0;transform:translateY(6px) scale(.7)}20%{opacity:1;transform:translateY(-8px) scale(1.05)}100%{opacity:0;transform:translateY(-64px) scale(1)}}
-#s2 .nabiSpot{position:absolute;top:16vh;left:50%;transform:translateX(-50%)}
+#s2 .nabiSpot{position:absolute;top:36vh;left:50%;transform:translateX(-50%)}
 
 /* ---------- scene 3 : bee ---------- */
 #s3 .field{flex:1;width:100%;position:relative}
-#bee{position:absolute;width:96px;top:20vh;left:12%;animation:beebob 2.4s ease-in-out infinite}
+#bee{position:absolute;width:92px;top:30vh;left:10%;animation:beebob 2.4s ease-in-out infinite}
 @keyframes beebob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-16px) rotate(3deg)}}
 #bee svg{width:100%;overflow:visible}
 #bee .beewing{transform-origin:48px 26px;animation:beewings .18s linear infinite alternate}
@@ -252,36 +250,36 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
 .pollen.drag{animation:none;z-index:6;cursor:grabbing;box-shadow:0 0 26px 10px rgba(255,223,142,.85)}
 .pollen.got{animation:pollenpop .45s ease-out forwards;pointer-events:none}
 @keyframes pollenpop{40%{transform:scale(1.35);opacity:1}100%{transform:scale(.1);opacity:0}}
-#s3 .nabiSpot{position:absolute;top:17vh;right:12%}
+#s3 .nabiSpot{position:absolute;top:27vh;right:8%}
 
 /* ---------- scene 4 : monument ---------- */
 #s4 .monwrap{flex:1;width:100%;position:relative;overflow:hidden}
-#tomb{position:absolute;bottom:150px;left:50%;transform:translateX(-50%);width:min(92vw,470px);opacity:.9}
-#vlogger{position:absolute;bottom:158px;left:50%;transform:translateX(-30%);width:74px;transition:transform .5s ease}
+#tomb{position:absolute;bottom:108px;left:50%;transform:translateX(-50%);width:min(94vw,470px);opacity:.9}
+#vlogger{position:absolute;bottom:116px;left:50%;transform:translateX(-30%);width:74px}
 #vlogger svg{width:100%;overflow:visible}
 #vlogger .armPhone{transform-origin:22px 46px;animation:vlogpan 3.4s ease-in-out infinite}
 @keyframes vlogpan{0%,100%{transform:rotate(0deg)}50%{transform:rotate(-9deg)}}
 #tourists{
-  position:absolute;bottom:158px;left:-150px;display:flex;gap:6px;
+  position:absolute;bottom:116px;left:-150px;display:flex;gap:6px;
   transition:left 1.2s ease;
 }
 #tourists.in{left:calc(50% - 138px)}
 #tourists.flee{transition:left .8s ease-in;left:-170px}
 .tourist{width:34px}
 .tourist svg{width:100%;overflow:visible}
-#s4 .nabiSpot{position:absolute;top:12vh;left:8%}
+#s4 .nabiSpot{position:absolute;top:38vh;left:6%}
 #recbar{
-  position:absolute;top:max(2.4vh,14px);left:50%;transform:translateX(-50%);
+  position:absolute;bottom:calc(var(--safe-bottom) + 84px);left:16px;
   display:none;align-items:center;gap:8px;z-index:45;
-  font-family:'Gaegu',cursive;font-weight:700;font-size:1.1rem;color:#C0392B;
-  background:rgba(255,255,255,.8);border-radius:999px;padding:5px 14px;
+  font-family:'Gaegu',cursive;font-weight:700;font-size:1.05rem;color:#C0392B;
+  background:rgba(255,255,255,.82);border-radius:999px;padding:5px 13px;
   white-space:nowrap;
 }
 #recbar.on{display:flex}
 #recbar i{width:10px;height:10px;border-radius:50%;background:#E74C3C;animation:pulse 1s infinite}
 .speech{
   position:absolute;background:var(--white);border-radius:16px;
-  padding:9px 13px;font-size:.9rem;font-weight:600;max-width:190px;
+  padding:9px 13px;font-size:.88rem;font-weight:600;max-width:185px;
   box-shadow:0 6px 18px rgba(92,68,87,.16);
   opacity:0;transition:opacity .4s ease;pointer-events:none;
   line-height:1.35;
@@ -302,26 +300,29 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
   animation:fall linear infinite;
 }
 @keyframes fall{to{transform:translateY(110vh)}}
-#s5 .nabiSpot{position:absolute;top:34vh;left:50%;transform:translateX(-50%)}
+#s5 .nabiSpot{position:absolute;top:38vh;left:50%;transform:translateX(-50%)}
 #umbrella{
-  position:absolute;top:26vh;left:50%;transform:translateX(-50%) translateY(18px);
+  position:absolute;top:29vh;left:50%;transform:translateX(-50%) translateY(18px);
   width:170px;opacity:0;transition:opacity .5s ease,transform .5s ease;
   pointer-events:none;
 }
 #umbrella.up{opacity:1;transform:translateX(-50%) translateY(0)}
+/* K-drama subtitles sit low, like real subtitles, just above the buttons */
 .subbar{
+  position:absolute;left:0;right:0;
+  bottom:calc(var(--safe-bottom) + 84px);
   font-family:'Gaegu',cursive;text-align:center;
-  color:#FFF;text-shadow:0 1px 6px rgba(60,50,90,.5);
-  margin-top:max(3vh,18px);padding:0 24px;
+  color:#FFF;text-shadow:0 1px 6px rgba(60,50,90,.55);
+  padding:0 24px;
 }
-.subbar .ko{font-size:1.5rem;font-weight:700;letter-spacing:.04em}
-.subbar .en{font-size:1.05rem;opacity:.9;font-family:'Quicksand',sans-serif;font-weight:500;margin-top:2px}
+.subbar .ko{font-size:1.45rem;font-weight:700;letter-spacing:.04em}
+.subbar .en{font-size:1rem;opacity:.9;font-family:'Quicksand',sans-serif;font-weight:500;margin-top:2px}
 #holdBtn{
   position:relative;overflow:hidden;
-  background:var(--lavender);box-shadow:0 6px 0 #B3ABE3;
+  background:var(--lavender);box-shadow:0 5px 0 #B3ABE3;
   touch-action:none;
 }
-#holdBtn:active{box-shadow:0 2px 0 #B3ABE3}
+#holdBtn:active{box-shadow:0 1px 0 #B3ABE3}
 #holdBtn .fill{
   position:absolute;inset:0;width:0%;
   background:rgba(255,255,255,.55);border-radius:999px;
@@ -330,16 +331,20 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
 #holdBtn .lbl{position:relative;z-index:1}
 
 /* ---------- scene 6 : finale ---------- */
-#s6 .finwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:0 26px;width:100%}
+#s6 .finwrap{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;text-align:center;padding:calc(var(--safe-top) + 10px) 22px calc(var(--safe-bottom) + 84px);
+  width:100%;
+}
 .fincard{
   background:rgba(255,255,255,.85);backdrop-filter:blur(8px);
-  border-radius:26px;padding:24px 22px;max-width:400px;
+  border-radius:26px;padding:20px 20px;max-width:400px;
   box-shadow:0 14px 40px rgba(92,68,87,.16);
 }
-.fincard p{font-size:1.02rem;line-height:1.55;font-weight:500;margin-bottom:12px;opacity:0;transform:translateY(8px);transition:opacity .8s ease,transform .8s ease}
+.fincard p{font-size:.98rem;line-height:1.5;font-weight:500;margin-bottom:11px;opacity:0;transform:translateY(8px);transition:opacity .8s ease,transform .8s ease}
 .fincard p.show{opacity:1;transform:none}
-.fincard .big{font-family:'Gaegu',cursive;font-weight:700;font-size:1.9rem;color:var(--blossom-deep);margin-bottom:6px}
-.credit{font-family:'Gaegu',cursive;font-size:1.1rem;color:var(--ink-soft);margin-top:14px;opacity:0;transition:opacity 1s ease}
+.fincard .big{font-family:'Gaegu',cursive;font-weight:700;font-size:1.8rem;color:var(--blossom-deep);margin-bottom:6px}
+.credit{font-family:'Gaegu',cursive;font-size:1.05rem;color:var(--ink-soft);margin-top:10px;opacity:0;transition:opacity 1s ease}
 .credit.show{opacity:1}
 .burst-bfly{position:absolute;font-size:24px;pointer-events:none;animation:burstup linear forwards}
 @keyframes burstup{
@@ -357,7 +362,6 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
 <body>
 <div id="stage">
 
-  <button id="backBtn">‹ back</button>
   <div id="petals"><span></span><span></span><span></span><span></span></div>
 
   <!-- ============ SCENE 0 : TITLE ============ -->
@@ -381,11 +385,7 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
       <div id="wakebar"><i></i></div>
       <div id="wakelbl">wake-o-meter</div>
     </div>
-    <div class="dialog" id="d1">
-      <div class="who"></div>
-      <div class="txt"></div>
-      <div class="hint">tap ▸</div>
-    </div>
+    <div class="dialog" id="d1"><div class="who"></div><div class="txt"></div></div>
   </section>
 
   <!-- ============ SCENE 2 : LILY GARDEN ============ -->
@@ -394,11 +394,7 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
     <div class="garden" id="garden">
       <div class="nabiSpot"><div class="nabi flap float" id="nabi2"><svg viewBox="0 0 200 180"></svg></div></div>
     </div>
-    <div class="dialog" id="d2">
-      <div class="who"></div>
-      <div class="txt"></div>
-      <div class="hint">tap ▸</div>
-    </div>
+    <div class="dialog" id="d2"><div class="who"></div><div class="txt"></div></div>
   </section>
 
   <!-- ============ SCENE 3 : BEE ============ -->
@@ -419,11 +415,7 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
       </div>
       <div class="nabiSpot"><div class="nabi flap float" id="nabi3"><svg viewBox="0 0 200 180"></svg></div></div>
     </div>
-    <div class="dialog" id="d3">
-      <div class="who"></div>
-      <div class="txt"></div>
-      <div class="hint">tap ▸</div>
-    </div>
+    <div class="dialog" id="d3"><div class="who"></div><div class="txt"></div></div>
   </section>
 
   <!-- ============ SCENE 4 : MONUMENT ============ -->
@@ -475,20 +467,12 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
       <div class="speech" id="speech"></div>
       <div class="nabiSpot"><div class="nabi flap float" id="nabi4"><svg viewBox="0 0 200 180"></svg></div></div>
     </div>
-    <div class="dialog" id="d4">
-      <div class="who"></div>
-      <div class="txt"></div>
-      <div class="hint">tap ▸</div>
-    </div>
+    <div class="dialog" id="d4"><div class="who"></div><div class="txt"></div></div>
   </section>
 
   <!-- ============ SCENE 5 : RAIN ============ -->
   <section class="scene" id="s5">
     <div class="eyebrow" style="color:#F3F0FF">Stop 4 · A Sudden Rain</div>
-    <div class="subbar" id="sub5">
-      <div class="ko">비가 와도 괜찮아</div>
-      <div class="en">even if it rains, it's okay</div>
-    </div>
     <div class="rainwrap">
       <div id="rain"></div>
       <svg id="umbrella" viewBox="0 0 170 150">
@@ -499,17 +483,17 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
       </svg>
       <div class="nabiSpot"><div class="nabi" id="nabi5"><svg viewBox="0 0 200 180"></svg></div></div>
     </div>
-    <div class="dialog" id="d5">
-      <div class="who"></div>
-      <div class="txt"></div>
-      <div class="hint">tap ▸</div>
+    <div class="subbar" id="sub5">
+      <div class="ko">비가 와도 괜찮아</div>
+      <div class="en">even if it rains, it's okay</div>
     </div>
+    <div class="dialog" id="d5"><div class="who"></div><div class="txt"></div></div>
   </section>
 
   <!-- ============ SCENE 6 : FINALE ============ -->
   <section class="scene" id="s6">
     <div class="finwrap">
-      <div class="nabi flap float" id="nabi6" style="width:150px;height:138px"><svg viewBox="0 0 200 180"></svg></div>
+      <div class="nabi flap float" id="nabi6" style="width:140px;height:129px"><svg viewBox="0 0 200 180"></svg></div>
       <div class="fincard" id="fincard">
         <div class="big" style="opacity:1">Nabi is back! 🌸</div>
         <p>"Look at me. LOOK at me. I'm a whole festival."</p>
@@ -519,9 +503,14 @@ h2{font-size:clamp(1.7rem,7.2vw,2.2rem);margin-top:.2em}
         <p class="big" style="margin-top:4px">힘내, Shru 🦋<br><span style="font-size:1rem;font-family:'Quicksand',sans-serif;color:var(--ink-soft)">(you've got this)</span></p>
       </div>
       <div class="credit" id="credit">made with care, by your friendly<br>neighbourhood fake vlogger 🎥</div>
-      <div class="btnrow"><button class="btn" id="replay" style="visibility:hidden">walk with Nabi again</button></div>
     </div>
   </section>
+
+  <!-- bottom navigation -->
+  <div id="nav" class="hidden">
+    <button id="prevBtn" class="btn">‹ back</button>
+    <div id="navSlot"></div>
+  </div>
 
 </div>
 
@@ -573,18 +562,43 @@ function go(id){
   document.querySelectorAll('.scene').forEach(s=>s.classList.remove('on'));
   $(id).classList.add('on');
   currentScene=id.slice(1);
-  $('#backBtn').classList.toggle('show',currentScene!=='s0');
+  $('#nav').classList.toggle('hidden',currentScene==='s0');
 }
-/* dialogue engine: tap the dialog to advance */
+
+/* ===== bottom nav: prev goes a scene back, navSlot holds next/actions ===== */
+const navSlot=$('#navSlot');
+function setNext(label,enabled,act){
+  navSlot.innerHTML='';
+  const b=document.createElement('button');
+  b.className='btn';
+  b.textContent=label;
+  b.disabled=!enabled;
+  b.onclick=e=>{e.stopPropagation();buzz(10);act&&act()};
+  navSlot.appendChild(b);
+  return b;
+}
+function showButtons(_,btns){
+  navSlot.innerHTML='';
+  btns.forEach(b=>{
+    const el=document.createElement('button');
+    el.className='btn'+(b.ghost?' ghost':'');
+    el.textContent=b.label;
+    el.onclick=e=>{e.stopPropagation();buzz(14);b.act()};
+    navSlot.appendChild(el);
+  });
+}
+
+/* dialogue engine: next button (or tapping the box) advances */
 function playLines(dEl,lines,onDone){
-  dEl.querySelectorAll('.btnrow').forEach(r=>r.remove());
-  const who=dEl.querySelector('.who'),txt=dEl.querySelector('.txt'),hint=dEl.querySelector('.hint');
+  const who=dEl.querySelector('.who'),txt=dEl.querySelector('.txt');
   let i=0;
   function render(){
     const L=lines[i];
     who.textContent=L.who||'';
     txt.innerHTML=L.text;
-    hint.classList.toggle('off',!!L.hold||i===lines.length-1&&!!L.stay);
+    const last=i===lines.length-1;
+    if(L.hold)setNext('next ›',false);
+    else if(!(last&&L.stay))setNext('next ›',true,adv);
     if(L.on)L.on();
   }
   function adv(){
@@ -595,18 +609,6 @@ function playLines(dEl,lines,onDone){
   }
   dEl.onclick=adv;
   render();
-}
-function showButtons(dEl,btns){
-  const row=document.createElement('div');
-  row.className='btnrow';
-  btns.forEach(b=>{
-    const el=document.createElement('button');
-    el.className='btn'+(b.ghost?' ghost':'');
-    el.textContent=b.label;
-    el.onclick=e=>{e.stopPropagation();buzz(14);row.remove();b.act()};
-    row.appendChild(el);
-  });
-  dEl.appendChild(row);
 }
 
 /* ================= scene 0 : title ================= */
@@ -691,7 +693,7 @@ function startScene2(){
   go('#s2');setColor(0);
   const g=$('#garden'),d=$('#d2');
   g.querySelectorAll('.lily,.wordpop').forEach(el=>el.remove());
-  const pos=[[8,150],[27,196],[46,150],[64,196],[81,152]];
+  const pos=[[7,96],[26,146],[45,96],[63,146],[80,100]];
   let bloomed=0;
   playLines(d,[
     {text:`The lilies of this garden are keeping Nabi's <b>pink</b>. But they only bloom for gentle hands.`},
@@ -739,7 +741,7 @@ function startScene3(){
       on:()=>spawnPollen()}
   ]);
   function spawnPollen(){
-    const SLOTS=[[40,26],[64,22],[78,42],[46,44],[66,58],[38,64]];
+    const SLOTS=[[42,34],[66,30],[78,48],[46,52],[66,66],[36,68]];
     for(let i=0;i<total;i++){
       const p=document.createElement('div');
       p.className='pollen';
@@ -826,13 +828,13 @@ function startScene4(){
     {who:'Nabi',text:`oh no. here comes a tourist family. <i>(people always think he is a foreigner.)</i>`,
       on:()=>{tourists.classList.add('in')}},
     {who:'Tourists',text:`"Excuse me sir!! Photo please!! Which country you from??"`,
-      on:()=>say('which country sir?? 📸','12%','300px')},
+      on:()=>say('which country sir?? 📸','10%','248px')},
     {who:'The Man',text:`<i>(calmly, with the peace of a thousand monks)</i><br>"Bhai. Main <b>Gujarati</b> hoon."`,
-      on:()=>{shh();say('bhai. Gujarati hoon. 😐','52%','310px')}},
+      on:()=>{shh();say('bhai. Gujarati hoon. 😐','50%','256px')}},
     {text:`The tourists have never walked away faster. One of them apologized to the monument.`,
       on:()=>{shh();tourists.classList.add('flee')}},
     {text:`Unbothered, he resumes his fake vlogging... <i>"So guys, behind me is the tomb of Humayun, and today we are exploring..."</i>`,
-      on:()=>{rec.classList.add('on');say('so guys, behind me... 🎥','48%','320px')}},
+      on:()=>{rec.classList.add('on');say('so guys, behind me... 🎥','46%','264px')}},
     {text:`There is no recording. There are <b>zero viewers</b>. He does not care. He is living his best life.`},
     {who:'Nabi',text:`HAHAHAHA. I can't. I CAN'T. <i>(laughs so hard she flips upside down mid-air)</i>`,
       on:()=>{shh();nabi.classList.add('spin');setTimeout(()=>nabi.classList.remove('spin'),1100);setColor(3)}},
@@ -863,15 +865,15 @@ function startScene5(){
   playLines(d,[
     {text:`Some clouds just show up, uninvited. It's not your fault they came. It never was.`},
     {who:'Nabi',text:`I don't mind the rain so much... it's just heavy to sit in it alone.`},
-    {text:`<b>Press and hold</b> to share your umbrella with Nabi, until the rain passes.`,hold:true,
+    {text:`<b>Press and hold</b> the button below to share your umbrella with Nabi, until the rain passes.`,hold:true,
       on:()=>makeHoldBtn()}
   ]);
   function makeHoldBtn(){
-    const row=document.createElement('div');row.className='btnrow';
+    navSlot.innerHTML='';
     const b=document.createElement('button');
     b.className='btn';b.id='holdBtn';
     b.innerHTML=`<span class="fill"></span><span class="lbl">hold to share ☂️</span>`;
-    row.appendChild(b);d.appendChild(row);
+    navSlot.appendChild(b);
     const fill=b.querySelector('.fill');
     let prog=0,t=null;
     function start(e){
@@ -890,12 +892,12 @@ function startScene5(){
     b.addEventListener('contextmenu',e=>e.preventDefault());
     function done(){
       buzz(25);
+      b.disabled=true;
       rain.classList.add('stopped');
       scene.classList.add('cleared');
       $('#sub5').innerHTML=`<div class="ko">비 온 뒤에 땅이 굳는다</div><div class="en">after the rain, the ground grows firmer</div>`;
       $('#nabi5').classList.add('flap');
       setColor(4);
-      row.remove();
       setTimeout(()=>{
         playLines(d,[
           {text:`The rain always passes. <b>Always.</b> And you never have to wait it out alone.`},
@@ -919,7 +921,7 @@ function startScene6(){
   const ps=document.querySelectorAll('#fincard p');
   ps.forEach(p=>p.classList.remove('show'));
   $('#credit').classList.remove('show');
-  $('#replay').style.visibility='hidden';
+  navSlot.innerHTML='';
   /* butterfly + petal burst */
   const em=['🦋','🦋','🌸','🐝','🌷','💗'];
   let n=0;
@@ -940,14 +942,15 @@ function startScene6(){
   /* reveal lines one by one */
   ps.forEach((p,i)=>s6timers.push(setTimeout(()=>p.classList.add('show'),900+i*1600)));
   s6timers.push(setTimeout(()=>{$('#credit').classList.add('show')},900+ps.length*1600));
-  s6timers.push(setTimeout(()=>{$('#replay').style.visibility='visible'},1400+ps.length*1600));
-  $('#replay').onclick=()=>{location.href=location.pathname};
+  s6timers.push(setTimeout(()=>{
+    setNext('walk with Nabi again 🦋',true,()=>{location.href=location.pathname});
+  },1400+ps.length*1600));
 }
 
-/* ================= back button ================= */
+/* ================= prev button ================= */
 const STARTERS={s0:()=>{go('#s0');setColor(0)},s1:startScene1,s2:startScene2,s3:startScene3,s4:startScene4,s5:startScene5,s6:startScene6};
 const PREV={s1:'s0',s2:'s1',s3:'s2',s4:'s3',s5:'s4',s6:'s5'};
-$('#backBtn').addEventListener('click',e=>{
+$('#prevBtn').addEventListener('click',e=>{
   e.stopPropagation();buzz(10);
   const p=PREV[currentScene];
   if(p)STARTERS[p]();
